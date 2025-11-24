@@ -28,17 +28,19 @@ Um dispositivo ou app Kindle configurado.
 
 Clone o repositório:
 
-git clone [https://github.com/diegusxavier/kindle-newsletter.git](https://github.com/diegusxavier/kindle-newsletter.git)
-cd kindle-newsletter
+```bash
+   git clone [https://github.com/diegusxavier/kindle-newsletter.git](https://github.com/diegusxavier/kindle-newsletter.git)
+   cd kindle-newsletter
 
 
 Crie e ative um ambiente virtual:
 
-python -m venv venv
-# Linux/Mac:
-source venv/bin/activate
-# Windows:
-venv\Scripts\activate
+```bash
+    python -m venv venv
+    # Linux/Mac:
+    source venv/bin/activate
+    # Windows:
+    venv\Scripts\activate
 
 
 Instale as dependências:
