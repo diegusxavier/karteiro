@@ -16,15 +16,12 @@ Envio para Kindle: Envia o PDF via e-mail com o assunto "Convert", garantindo qu
 
 🛠️ Pré-requisitos
 
-Python 3.8+ instalado.
+- Python 3.8+ instalado.
+- Uma conta no Google AI Studio (para obter a API Key do Gemini).
+- Uma conta Gmail (para envio via SMTP) com "Verificação em duas etapas" ativada e uma "Senha de App" gerada.
+- Um dispositivo ou app Kindle configurado.
 
-Uma conta no Google AI Studio (para obter a API Key do Gemini).
-
-Uma conta Gmail (para envio via SMTP) com "Verificação em duas etapas" ativada e uma "Senha de App" gerada.
-
-Um dispositivo ou app Kindle configurado.
-
-🚀 Instalação
+# 🚀 Instalação
 
 Clone o repositório:
 
@@ -48,17 +45,17 @@ Instale as dependências:
     pip install -r requirements.txt
 ```
 
-⚙️ Configuração
+# ⚙️ Configuração
 
 1. Variáveis de Ambiente (.env)
 
 Renomeie o arquivo .env.example para .env e preencha com suas credenciais:
 
-# Chave da API do Google Gemini ([https://aistudio.google.com/](https://aistudio.google.com/))
+## Chave da API do Google Gemini ([https://aistudio.google.com/](https://aistudio.google.com/))
 GEMINI_API_KEY=sua_chave_aqui
 
-# Configurações de E-mail (Gmail)
-# Gere uma senha de app em: Conta Google > Segurança > Verificação em 2 etapas > Senhas de App
+## Configurações de E-mail (Gmail)
+### Gere uma senha de app em: Conta Google > Segurança > Verificação em 2 etapas > Senhas de App
 ```bash
 EMAIL_PASSWORD=sua_senha_de_app_16_digitos
 SENDER_EMAIL=seu_email_pessoal@gmail.com
@@ -98,15 +95,11 @@ python3 main.py
 
 O script irá:
 
-Coletar candidatos via RSS.
-
-Usar a IA para filtrar as melhores notícias.
-
-Baixar o conteúdo completo e gerar resumos.
-
-Criar um PDF em data/output/.
-
-Enviar para o seu Kindle via e-mail.
+- Coletar candidatos via RSS.
+- Usar a IA para filtrar as melhores notícias.
+- Baixar o conteúdo completo e gerar resumos.
+- Criar um PDF em data/output/.
+- Enviar para o seu Kindle via e-mail.
 
 📂 Estrutura do Projeto
 
