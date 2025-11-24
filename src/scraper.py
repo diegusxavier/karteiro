@@ -11,8 +11,11 @@ class NewsScraper:
         self.preferences = config.get('preferences', {})
         self.include_images = self.preferences.get('include_images', False)
         
-        # Agora temos um limite de "candidatos" (olhar muitos) e "escolhidos" (baixar poucos)
-        self.candidates_limit = 10 # Quantas manchetes olhar por site
+        # --- LIMITE DE CANDIDATOS ---
+        # Define quantas notícias recentes o script vai "olhar" em CADA site.
+        # Aumente se quiser que a IA considere notícias mais antigas do feed.
+        self.candidates_limit = 10 
+        
         self.images_dir = os.path.join("data", "images")
         os.makedirs(self.images_dir, exist_ok=True)
 
@@ -22,24 +25,42 @@ class NewsScraper:
         para a IA decidir o que vale a pena.
         """
         candidates = []
-        print("🔎 Coletando manchetes candidatas...")
+        print("\n🔎 Iniciando varredura de RSS...")
 
         for source in self.sources:
+            print(f"   📡 Conectando a: {source['name']}...") 
+            
             try:
                 feed = feedparser.parse(source['url'])
+                
+                if not feed.entries:
+                    print(f"      ⚠️  Nenhum item encontrado neste feed. Verifique a URL.")
+                    continue
+
                 # Pega os X primeiros itens do feed para análise
+                count_source = 0
                 for entry in feed.entries[:self.candidates_limit]:
+                    # Limpeza básica do título
+                    title = entry.title.strip()
+                    
+                    # --- NOVO PRINT: MOSTRA CADA MANCHETE ENCONTRADA ---
+                    print(f"      • [{source['name']}] {title}")
+                    
                     candidates.append({
-                        "id": str(uuid.uuid4()), # ID temporário para identificar a notícia
-                        "title": entry.title,
+                        "id": str(uuid.uuid4()), 
+                        "title": title,
                         "url": entry.link,
                         "source": source['name'],
                         "published": entry.get('published', '')
                     })
+                    count_source += 1
+                
+                print(f"      ✅ {count_source} manchetes coletadas.")
+
             except Exception as e:
-                print(f"❌ [Erro no feed {source['name']}]: {e}")
+                print(f"❌ [Erro crítico no feed {source['name']}]: {e}")
         
-        print(f"💬 Total de candidatos encontrados: {len(candidates)}")
+        print(f"\n💬 Resumo: {len(candidates)} notícias candidatas enviadas para análise da IA.\n")
         return candidates
 
     def download_article_content(self, url):
@@ -79,3 +100,41 @@ class NewsScraper:
         except:
             return None
         return None
+
+# --- BLOCO DE TESTE INDIVIDUAL ---
+if __name__ == "__main__":
+    print("🛠️  Modo de Teste do Scraper Iniciado...")
+    
+    # Configuração Fake para testar sem ler o arquivo YAML
+    mock_config = {
+        "sources": [
+            {"name": "Teste - CNN Tecnologia", "url": "https://www.cnnbrasil.com.br/tecnologia/feed/"},
+            {"name": "Teste - G1 Tecnologia", "url": "https://g1.globo.com/rss/g1/tecnologia/"}
+        ],
+        "preferences": {
+            "include_images": False,
+            "max_articles_per_source": 5
+        }
+    }
+    
+    scraper = NewsScraper(mock_config)
+    
+    # Testa a coleta de candidatos
+    print("\n--- Testando get_candidates() ---")
+    candidatos = scraper.get_candidates()
+    
+    # Testa o download do primeiro artigo encontrado (se houver)
+    if candidatos:
+        print("\n--- Testando download_article_content() com o primeiro item ---")
+        primeiro = candidatos[0]
+        print(f"Baixando: {primeiro['title']} ({primeiro['url']})")
+        conteudo = scraper.download_article_content(primeiro['url'])
+        
+        if conteudo:
+            print("\n✅ Conteúdo baixado com sucesso!")
+            print(f"Tamanho do texto: {len(conteudo['content'])} caracteres")
+            print(f"Imagem principal: {conteudo['image_url']}")
+        else:
+            print("❌ Falha ao baixar conteúdo.")
+    else:
+        print("⚠️ Nenhuma notícia encontrada para testar o download.")

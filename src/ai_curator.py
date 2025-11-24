@@ -98,12 +98,37 @@ class NewsCurator:
         # (Código anterior da função generate_briefing...)
         print("📝 Gerando Briefing...")
         combined = "\n---\n".join(summaries_list)
-        prompt = f"""Editor Chefe. Crie o Briefing Executivo.
-        Notícias: {combined}
-        Estrutura Markdown: # Briefing Executivo, ## Visão Geral, ## Panorama, ## Desenvolvimentos, ## O que observar.
+        prompt = f"""
+        Atue como Editor Chefe de um jornal de elite. Abaixo estão os resumos das principais notícias do dia.
+
+        Sua tarefa é escrever a CAPA (Briefing Executivo) do jornal.
+
+        NOTÍCIAS DO DIA:
+        {combined_text}
+        ESTRUTURA DO BRIEFING (Markdown):
+        # Briefing Executivo
+        ## Visão Geral
+        Um parágrafo conciso conectando os temas. Qual é o sentimento geral das notícias hoje?
+        ## Parnorama Geral
+        Identifique 3 a 5 temas mais relevantes que aparecem nas notícias, com um breve panorama geral de cada tema macro.
+        Para cada tema, escreva um pequeno parágrafo que resuma o parnorama geral do tema nas notícias.
+        ## Desenvolvimentos Chave
+        Agrupe notícias similares se houver. Separe em temas se necessário em Heading 3 (###). Liste os desenvolvimentos mais importantes em bullets. Entre 1 e 2 bullets por notícia, cada um contendo uma frase.
+        ## O que observar
+        Uma lista curta de implicações futuras baseada nessas notícias.
+
+        IMPORTANTE:
+        - Não repita as notícias individualmente aqui, apenas sintetize os temas.
+        - Seja extremamente conciso e denso em informação.
+        - Gere apenas o markdown.
         """
         try:
             response = self.client.models.generate_content(model=self.model_name, contents=prompt)
             return response.text
         except:
             return "# Briefing\nErro."
+        
+        # Bloco de teste rápido (para rodar esse arquivo diretamente e ver se funciona)
+
+
+
