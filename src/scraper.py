@@ -14,7 +14,7 @@ class NewsScraper:
         # --- LIMITE DE CANDIDATOS ---
         # Define quantas notícias recentes o script vai "olhar" em CADA site.
         # Aumente se quiser que a IA considere notícias mais antigas do feed.
-        self.candidates_limit = 5 
+        self.candidates_limit = 10
         
         self.images_dir = os.path.join("data", "images")
         os.makedirs(self.images_dir, exist_ok=True)

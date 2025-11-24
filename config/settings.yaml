@@ -13,13 +13,13 @@ preferences:
     - "Geopolítica"
   
   include_images: false # true = baixa e insere imagens; false = apenas texto
-  max_articles_per_source: 2 # Limita quantas notícias pegar de cada site para não ficar gigante
+  max_articles_per_source: 10 # Limita quantas notícias pegar de cada site para não ficar gigante
 
 # --- Fontes de Notícias (RSS Feeds) ---
 # Você pode adicionar quantos quiser. Busque por "nome do site + rss" no Google.
 sources:
-  - name: "El País Brasil"
-    url: "https://elpais.com/tag/rss/brasil/"  # El País Brasil
+  - name: "Tech Crunch"
+    url: "https://techcrunch.com/feed/"  # Tech Crunch
   
   - name: "Folha - Em Cima da Hora"
     url: "https://feeds.folha.uol.com.br/emcimadahora/rss091.xml" # Folha - Em Cima da Hora
