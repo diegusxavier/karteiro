@@ -59,17 +59,19 @@ GEMINI_API_KEY=sua_chave_aqui
 
 # Configurações de E-mail (Gmail)
 # Gere uma senha de app em: Conta Google > Segurança > Verificação em 2 etapas > Senhas de App
+```bash
 EMAIL_PASSWORD=sua_senha_de_app_16_digitos
 SENDER_EMAIL=seu_email_pessoal@gmail.com
 KINDLE_EMAIL=seu_usuario@kindle.com
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
+```
 
 
 2. Preferências e Fontes (config/settings.yaml)
 
 Edite o arquivo config/settings.yaml para definir seus interesses e fontes de notícias:
-
+```yaml
 preferences:
   topics:
     - "Inteligência Artificial"
@@ -80,7 +82,7 @@ preferences:
 sources:
   - name: "El País Brasil"
     url: "[https://elpais.com/tag/rss/brasil/](https://elpais.com/tag/rss/brasil/)"
-
+```
 
 3. Autorização na Amazon
 
@@ -90,8 +92,9 @@ Para receber o arquivo, acesse Gerencie seu Conteúdo e Dispositivos > Preferên
 
 Execute o arquivo principal:
 
-python main.py
-
+```
+python3 main.py
+```
 
 O script irá:
 
@@ -107,6 +110,7 @@ Enviar para o seu Kindle via e-mail.
 
 📂 Estrutura do Projeto
 
+```plaintext
 kindle-newsletter/
 ├── config/
 │   └── settings.yaml       # Configuração de fontes e tópicos
@@ -119,7 +123,7 @@ kindle-newsletter/
 ├── .env                    # Credenciais (GitIgnored)
 ├── main.py                 # Arquivo principal
 └── requirements.txt        # Dependências
-
+```
 
 🛡️ Segurança
 
