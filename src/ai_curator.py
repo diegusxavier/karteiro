@@ -97,7 +97,7 @@ class NewsCurator:
     def generate_briefing(self, summaries_list):
         # (Código anterior da função generate_briefing...)
         print("📝 Gerando Briefing...")
-        combined = "\n---\n".join(summaries_list)
+        combined_text = "\n---\n".join(summaries_list)
         prompt = f"""
         Atue como Editor Chefe de um jornal de elite. Abaixo estão os resumos das principais notícias do dia.
 
