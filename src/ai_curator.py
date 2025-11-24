@@ -74,12 +74,12 @@ class NewsCurator:
         Você é um analista de inteligência especialista. Sua tarefa é ler e analisar a notícia abaixo e criar um relatório de resumo para um jornal executivo.
 
         DADOS DA NOTÍCIA:
-        Título: {article_data['title']}
+        Título: {article_data['title']} (Se estiver em inglês, deve traduzir o título para português)
         Fonte: {article_data.get('source')}
         Conteúdo: {article_data['content'][:8000]} (Texto truncado se for muito longo)
 
         FORMATO DE SAÍDA (Markdown):
-        - NÃO repita o título ou manchete no início. Comece diretamente pelo resumo.
+        - Se o Título estiver em inglês, traduza-o para português, mas em uma linha em itálico. Se estiver em português, não repita o título, siga para o resumo.
         - Escreva um resumo de 2 a 3 parágrafos, mantendo as informações do conteúdo.
         - Liste 3 "Key Takeaways" (Pontos Chave) em bullets.
         - Inclua uma seção "Contexto Adicional" com 2-3 frases que expliquem o motivo da importância do tema ou implicações.
