@@ -1,0 +1,35 @@
+# config/settings.yaml
+
+# --- Configurações Gerais ---
+project_name: "Meu Jornal Diário"
+language: "pt-br" # Idioma preferencial para os resumos
+
+# --- Configurações de Conteúdo ---
+preferences:
+  topics: # Palavras-chave para ajudar a IA a filtrar o que é relevante
+    - "Inteligência Artificial"
+    - "Mercado Financeiro"
+    - "Tecnologia"
+    - "Geopolítica"
+  
+  include_images: false # true = baixa e insere imagens; false = apenas texto
+  max_articles_per_source: 3 # Limita quantas notícias pegar de cada site para não ficar gigante
+
+# --- Fontes de Notícias (RSS Feeds) ---
+# Você pode adicionar quantos quiser. Busque por "nome do site + rss" no Google.
+sources:
+  - name: "El País Brasil"
+    url: "https://elpais.com/tag/rss/brasil/"  # El País Brasil
+  
+  - name: "Folha - Em Cima da Hora"
+    url: "https://feeds.folha.uol.com.br/emcimadahora/rss091.xml" # Folha - Em Cima da Hora
+
+  - name: "The Intercept Brasil"
+    url: "https://www.intercept.com.br/feed/" # The Intercept Brasil
+
+# --- Configurações de API e Credenciais ---
+# DICA: É recomendável usar variáveis de ambiente para as chaves reais no arquivo .env
+# Mas aqui deixamos a estrutura pronta para o código ler.
+api:
+  gemini_model: "gemini-2.5-flash" # ou "gemini-2.5-pro" para análises mais complexas
+
