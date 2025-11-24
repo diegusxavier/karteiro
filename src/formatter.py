@@ -78,7 +78,7 @@ class NewsFormatter:
         story.append(PageBreak())
 
         # --- 2. Artigos (Deep Dive) ---
-        story.append(Paragraph("Deep Dive: Notícias Detalhadas", self.styles['BriefingTitle']))
+        story.append(Paragraph("Notícias Detalhadas", self.styles['BriefingTitle']))
         story.append(Spacer(1, 20))
 
         for article in articles_list:

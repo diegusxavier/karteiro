@@ -79,7 +79,7 @@ class NewsCurator:
         Conteúdo: {article_data['content'][:8000]} (Texto truncado se for muito longo)
 
         FORMATO DE SAÍDA (Markdown):
-        - Mantenha a manchete original (H2).
+        - NÃO repita o título ou manchete no início. Comece diretamente pelo resumo.
         - Escreva um resumo de 2 a 3 parágrafos, mantendo as informações do conteúdo.
         - Liste 3 "Key Takeaways" (Pontos Chave) em bullets.
         - Inclua uma seção "Contexto Adicional" com 2-3 frases que expliquem o motivo da importância do tema ou implicações.
