@@ -81,7 +81,7 @@ class NewsCurator:
         FORMATO DE SAÍDA (Markdown):
         - Se o Título estiver em inglês, traduza-o para português, mas em uma linha em itálico. Se estiver em português, não repita o título, siga para o resumo.
         - Escreva um resumo de 2 a 3 parágrafos, mantendo as informações do conteúdo.
-        - Liste 3 "Key Takeaways" (Pontos Chave) em bullets.
+        - Liste 3 "Pontos Chave" em bullets.
         - Inclua uma seção "Contexto Adicional" com 2-3 frases que expliquem o motivo da importância do tema ou implicações.
         - O tom deve ser objetivo, profissional e direto.
         - Idioma: Português do Brasil.
@@ -108,8 +108,8 @@ class NewsCurator:
         ESTRUTURA DO BRIEFING (Markdown):
         # Briefing Executivo
         ## Visão Geral
-        Um parágrafo conciso conectando os temas. Qual é o sentimento geral das notícias hoje?
-        ## Parnorama Geral
+        Um ou dois parágrafos concisos conectando os temas. Qual é o sentimento geral das notícias hoje?
+        ## Resumo dos Temas Principais
         Identifique 3 a 5 temas mais relevantes que aparecem nas notícias, com um breve panorama geral de cada tema macro.
         Para cada tema, escreva um pequeno parágrafo que resuma o parnorama geral do tema nas notícias.
         ## Desenvolvimentos Chave
