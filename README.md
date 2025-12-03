@@ -1,4 +1,4 @@
-# 📰 Kindle Newsletter - Jornal com IA
+# 📰 Karteiro - Jornal com IA
 
 Este projeto é um agente autônomo de notícias que cria um jornal personalizado diário. Ele coleta notícias de feeds RSS, utiliza Inteligência Artificial (Google Gemini) para filtrar o que é relevante para você, resume os artigos, gera um arquivo PDF formatado e envia automaticamente para o seu Kindle com conversão para leitura otimizada.
 
