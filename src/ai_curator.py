@@ -18,7 +18,7 @@ class NewsCurator:
         # Tópicos de interesse do usuário
         self.user_topics = config.get('preferences', {}).get('topics', [])
 
-    def filter_candidates(self, candidates_list, limit=5):
+    def filter_candidates(self, candidates_list, limit=7):
         """
         Analisa uma lista grande de manchetes e escolhe as melhores baseadas nos tópicos.
         Retorna uma lista de IDs das notícias escolhidas.
@@ -74,7 +74,7 @@ class NewsCurator:
         Você é um analista de inteligência especialista. Sua tarefa é ler e analisar a notícia abaixo e criar um relatório de resumo para um jornal executivo.
         O título do artigo é "{article_data['title']}", e se estiver em inglês, deve ser traduzido para português onde houver escrito *TÍTULO*.
         DADOS DA NOTÍCIA:
-        Título: *TÍTULO* 
+        Título: *TÍTULO* (Se estiver em inglês, traduza para português)
         Fonte: {article_data.get('source')}
         Conteúdo: {article_data['content'][:8000]} (Texto truncado se for muito longo)
 
@@ -86,7 +86,7 @@ class NewsCurator:
         - O tom deve ser objetivo, profissional e direto.
         - Idioma: Português do Brasil.
 
-        Gere apenas o conteúdo markdown, sem introduções ou conversas. Inclua o link original no final.
+        Gere apenas o conteúdo markdown, sem introduções ou conversas.
         """
         try:
             response = self.client.models.generate_content(model=self.model_name, contents=prompt)
@@ -116,6 +116,7 @@ class NewsCurator:
         Agrupe notícias similares se houver. Separe em temas se necessário em Heading 3 (###). Liste os desenvolvimentos mais importantes em bullets. Entre 1 e 2 bullets por notícia, cada um contendo uma frase.
         ## O que observar
         Uma lista curta de implicações futuras baseada nessas notícias.
+        
 
         IMPORTANTE:
         - Não repita as notícias individualmente aqui, apenas sintetize os temas.

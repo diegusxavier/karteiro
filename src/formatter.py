@@ -1,10 +1,28 @@
 import os
 import re
+import uuid
+from xml.sax.saxutils import escape
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, PageBreak, Flowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from datetime import datetime
+
+class Bookmark(Flowable):
+    """
+    Elemento invisível que adiciona um marcador no índice (outline) do PDF.
+    """
+    def __init__(self, title, level=0):
+        Flowable.__init__(self)
+        self.title = title
+        self.level = level
+        self.key = str(uuid.uuid4()) # Identificador único para o link interno
+
+    def draw(self):
+        # Regista a posição atual como destino
+        self.canv.bookmarkPage(self.key)
+        # Adiciona a entrada no painel de sessões (outline) do PDF
+        self.canv.addOutlineEntry(self.title, self.key, level=self.level)
 
 class NewsFormatter:
     def __init__(self):
@@ -66,6 +84,9 @@ class NewsFormatter:
         story = []
 
         # --- 1. Capa / Briefing ---
+        # Adiciona marcador para o início
+        story.append(Bookmark("Briefing Executivo", level=0))
+        
         # Data no topo
         date_str = datetime.now().strftime("%d/%m/%Y")
         story.append(Paragraph(f"Edição de: {date_str}", self.styles['Metadata']))
@@ -78,12 +99,25 @@ class NewsFormatter:
         story.append(PageBreak())
 
         # --- 2. Artigos (Deep Dive) ---
+        story.append(Bookmark("Notícias Detalhadas", level=0)) # Marcador de seção principal
         story.append(Paragraph("Notícias Detalhadas", self.styles['BriefingTitle']))
         story.append(Spacer(1, 20))
 
         for article in articles_list:
-            # Título do Artigo
-            story.append(Paragraph(article['title'], self.styles['ArticleTitle']))
+            # Limpa caracteres especiais do título para evitar erros no XML
+            clean_title = escape(article['title'])
+            
+            # Adiciona Marcador no Índice para esta notícia (nível 1 = subtópico)
+            story.append(Bookmark(clean_title, level=1))
+
+            # Título do Artigo (Com Link Clicável)
+            if article.get('url'):
+                # Envolve o título numa tag <a> para torná-lo clicável
+                title_paragraph = f'<a href="{article["url"]}">{clean_title}</a>'
+            else:
+                title_paragraph = clean_title
+            
+            story.append(Paragraph(title_paragraph, self.styles['ArticleTitle']))
             
             # Metadados (Fonte)
             source_info = f"Fonte: {article.get('source', 'Desconhecida')} | {article.get('published_at', '')}"
@@ -103,7 +137,6 @@ class NewsFormatter:
                     print(f"❌ Erro ao inserir imagem no PDF: {e}")
 
             # Conteúdo do Resumo (Markdown processado)
-            # O article['ai_summary'] será adicionado no main.py, aqui assumimos que existe
             if 'ai_summary' in article:
                 story.extend(self._parse_markdown_to_flowables(article['ai_summary']))
             
@@ -128,8 +161,9 @@ if __name__ == "__main__":
     dummy_briefing = "# Briefing Executivo\n## Visão Geral\nHoje o mercado subiu.\n* Ponto 1\n* Ponto 2"
     dummy_articles = [
         {
-            "title": "Teste de Artigo",
+            "title": "Teste de Artigo & Cia",
             "source": "CNN",
+            "url": "https://google.com",
             "ai_summary": "## Manchete Incrível\nEste é um texto de teste com **negrito**.\n* Takeaway 1",
             "local_image_path": None
         }
