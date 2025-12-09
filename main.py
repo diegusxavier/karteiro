@@ -9,7 +9,8 @@ from datetime import datetime
 from src.scraper import NewsScraper
 from src.ai_curator import NewsCurator
 from src.formatter import NewsFormatter
-from src.emailer import EmailSender # <--- NOVO IMPORT
+from src.emailer import EmailSender 
+from src.epub_generator import EpubGenerator
 
 def load_config():
     # (Mantém igual ao anterior)
@@ -54,18 +55,23 @@ def main():
 
     briefing_text = curator.generate_briefing(summaries)
     
-    formatter = NewsFormatter()
-    filename = f"Jornal_{datetime.now().strftime('%Y-%m-%d')}.pdf"
-    pdf_path = formatter.create_pdf(briefing_text, processed_articles, output_filename=filename)
-    
+    # Geração do PDF
+    pdf_formater = NewsFormatter()
+    pdf_filename = f"Jornal_{datetime.now().strftime('%Y-%m-%d')}.pdf"
+    pdf_path = pdf_formater.create_pdf(briefing_text, processed_articles, output_filename=pdf_filename)
+
+    # Geração do EPUB
+    epub_gen = EpubGenerator()
+    filename = f"Jornal_{datetime.now().strftime('%Y-%m-%d')}.epub" # Extensão .epub
+    epub_path = epub_gen.create_epub(briefing_text, processed_articles, output_filename=filename)
     # --- ETAPA 4: ENVIO DE EMAIL (NOVO) ---
     if pdf_path:
         print(f"✅ PDF Gerado: {pdf_path}")
         
         # Pergunta se quer enviar (opcional, para teste) ou envia direto
         # Vamos enviar direto:
-        # emailer = EmailSender(config)
-        # emailer.send_pdf(pdf_path)
+        emailer = EmailSender(config)
+        emailer.send_pdf(epub_path)
 
 if __name__ == "__main__":
     main()

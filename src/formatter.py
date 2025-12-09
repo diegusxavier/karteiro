@@ -117,7 +117,7 @@ class NewsFormatter:
         return flowables
 
     def create_pdf(self, briefing_text, articles_list, candidates_list=None, output_filename="daily_briefing.pdf"):
-        output_path = os.path.join("data", "output", output_filename)
+        output_path = os.path.join("data", "output", "pdfs", output_filename)
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
         doc = SimpleDocTemplate(output_path, pagesize=A5, rightMargin=10, leftMargin=10, topMargin=10, bottomMargin=10)

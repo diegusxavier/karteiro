@@ -109,10 +109,8 @@ class NewsCurator:
         ## Visão Geral
         Um ou dois parágrafos concisos conectando os temas. Qual é o sentimento geral das notícias hoje?
         ## Resumo dos Temas Principais
-        Identifique 3 a 5 temas mais relevantes que aparecem nas notícias, com um breve panorama geral de cada tema macro.
-        Para cada tema, escreva um pequeno parágrafo que resuma o parnorama geral do tema nas notícias.
-        ## Desenvolvimentos Chave
-        Agrupe notícias similares se houver. Separe em temas se necessário em Heading 3 (###). Liste os desenvolvimentos mais importantes em bullets. Entre 1 e 2 bullets por notícia, cada um contendo uma frase.
+        Identifique os temas mais relevantes que aparecem nas notícias, com um breve resumo do panorama geral de cada tema macro.
+        Para cada tema, liste os desenvolvimentos mais importantes em bullets. Entre 1 e 2 bullets por notícia, cada um contendo uma frase.
         ## O que observar
         Uma lista curta de implicações futuras baseada nessas notícias.
         

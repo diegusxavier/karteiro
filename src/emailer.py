@@ -91,7 +91,7 @@ if __name__ == "__main__":
         # 2. Busca automática do PDF mais recente para teste
         # Define o diretório de saída padrão
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # Volta de src/ para a raiz
-        output_dir = os.path.join(base_dir, "data", "output")
+        output_dir = os.path.join(base_dir, "data", "output/pdfs")
         
         # Lista arquivos PDF
         pdf_files = []
