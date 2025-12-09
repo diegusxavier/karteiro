@@ -71,7 +71,6 @@ class EpubGenerator:
             content_body = self._markdown_to_html(art.get('ai_summary', ''))
 
             # Monta o HTML do capítulo
-            # AQUI ESTÁ O LINK QUE FUNCIONA: <a href="{url}">
             html_content = f"""
                 <h1>{title}</h1>
                 <p class="meta">Fonte: {source}</p>

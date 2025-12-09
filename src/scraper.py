@@ -11,7 +11,6 @@ class NewsScraper:
         self.preferences = config.get('preferences', {})
         self.include_images = self.preferences.get('include_images', False)
         
-        # --- LIMITE DE CANDIDATOS (AGORA DINÂMICO) ---
         # Tenta ler do YAML, se não existir, usa 15 como padrão
         self.candidates_limit = self.preferences.get('rss_scan_limit', 15)
         
@@ -42,7 +41,6 @@ class NewsScraper:
                     # Limpeza básica do título
                     title = entry.title.strip()
                     
-                    # --- NOVO PRINT: MOSTRA CADA MANCHETE ENCONTRADA ---
                     print(f"      • [{source['name']}] {title}")
                     
                     candidates.append({

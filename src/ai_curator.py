@@ -48,7 +48,7 @@ class NewsCurator:
         """
 
         try:
-            # --- MUDANÇA AQUI: Ativando o JSON Mode ---
+            # Ativando o JSON Mode 
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=prompt,

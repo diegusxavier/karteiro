@@ -79,8 +79,6 @@ class EmailSender:
             return False
         
 
-# ... (mantenha o código anterior da classe EmailSender)
-
 if __name__ == "__main__":
     print("🧪 Iniciando Teste Isolado de Envio de E-mail...")
     
