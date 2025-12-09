@@ -117,6 +117,7 @@ class NewsCurator:
         {combined_text}
         ESTRUTURA DO BRIEFING (Markdown):
         # KARTEIRO
+        [https://github.com/diegusxavier/karteiro](https://github.com/diegusxavier/karteiro)
         ## Visão Geral
         Um ou dois parágrafos concisos conectando os temas. Qual é o sentimento geral das notícias hoje?
         ## Resumo dos Temas Principais
