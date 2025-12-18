@@ -1,18 +1,19 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+import dotenv
 
 # Configurações de Conexão
 # Nota: Como estamos rodando o script FORA do Docker (na venv), usamos 'localhost'.
 # Se um dia o script python for para dentro do Docker, mudamos para 'db'.
-DB_USER = "karteiro_user"
-DB_PASS = "karteiro_password"
-DB_HOST = "localhost" 
-DB_PORT = "5432"
-DB_NAME = "karteiro_db"
+DB_USER = os.getenv("DB_USER", "karteiro_user")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "karteiro_password")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "karteiro_db")
 
 # URL de Conexão (Formato exigido pelo SQLAlchemy)
-DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 # Cria o "motor" da conexão
 engine = create_engine(DATABASE_URL)

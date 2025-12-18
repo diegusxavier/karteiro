@@ -1,5 +1,5 @@
 # src/models.py
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text, Index
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from src.database import Base, engine
@@ -10,15 +10,16 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=False) # Email pessoal
-    kindle_email = Column(String, nullable=False) # Email do Kindle
+    email = Column(String, unique=True, index=True, nullable=False)
+    kindle_email = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.now)
 
-    # Relacionamentos (1 usuário tem várias fontes, interesses e histórico)
-    sources = relationship("Source", back_populates="user")
-    interests = relationship("Interest", back_populates="user")
-    history = relationship("NewsHistory", back_populates="user")
+    # MELHORIA: cascade="all, delete-orphan"
+    # Se deletar o usuário, apaga automaticamente as fontes, interesses e histórico dele.
+    sources = relationship("Source", back_populates="user", cascade="all, delete-orphan")
+    interests = relationship("Interest", back_populates="user", cascade="all, delete-orphan")
+    history = relationship("NewsHistory", back_populates="user", cascade="all, delete-orphan")
 
 # Tabela de Fontes (RSS)
 class Source(Base):
@@ -38,11 +39,11 @@ class Interest(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    keyword = Column(String, nullable=False) # Ex: "Inteligência Artificial"
+    keyword = Column(String, nullable=False)
 
     user = relationship("User", back_populates="interests")
 
-# Tabela de Histórico de Notícias (Para não repetir)
+# Tabela de Histórico de Notícias
 class NewsHistory(Base):
     __tablename__ = "news_history"
 
@@ -50,13 +51,24 @@ class NewsHistory(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     
     title = Column(String, nullable=False)
-    url = Column(String, nullable=False, index=True) # Indexado para busca rápida
+    
+    # REMOVIDO: index=True (Pois agora temos o índice composto abaixo)
+    url = Column(String, nullable=False)
+    
+    # Mantido como String para compatibilidade com RSS variados. 
+    # Idealmente, converteríamos para DateTime no futuro.
     published_at = Column(String, nullable=True)
+    
     processed_at = Column(DateTime, default=datetime.now)
 
     user = relationship("User", back_populates="history")
 
-# Função que cria as tabelas no banco de verdade
+    # MELHORIA: Índice Composto
+    # Cria uma "via expressa" de busca combinando ID do Usuário + URL
+    __table_args__ = (
+        Index('idx_user_url', 'user_id', 'url'),
+    )
+
 def init_db():
     print("🔄 Criando tabelas no banco de dados...")
     Base.metadata.create_all(bind=engine)
