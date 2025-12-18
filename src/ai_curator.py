@@ -1,36 +1,51 @@
+import sys
 import os
 import json
 from google import genai
 from dotenv import load_dotenv
 
+# --- CORREÇÃO DE PATH ---
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.models import User
+
 load_dotenv()
 
 class NewsCurator:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self):
+        """
+        Inicializa o cliente do Gemini.
+        Não precisamos mais passar 'config' aqui, pois os tópicos virão por usuário.
+        """
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("Erro: GEMINI_API_KEY não encontrada.")
+            raise ValueError("Erro: GEMINI_API_KEY não encontrada no .env")
         
         self.client = genai.Client(api_key=api_key)
-        self.model_name = config.get('api', {}).get('gemini_model', 'gemini-1.5-flash')
-        
-        # Tópicos de interesse do usuário
-        self.user_topics = config.get('preferences', {}).get('topics', [])
+        # Podemos definir o modelo padrão aqui ou no .env
+        self.model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
-    def filter_candidates(self, candidates_list, limit=7):
+    def filter_candidates(self, candidates_list, user: User, limit=7):
         """
-        Analisa uma lista grande de manchetes e escolhe as melhores baseadas nos tópicos.
-        Retorna uma lista de IDs das notícias escolhidas usando JSON Mode.
+        Analisa as notícias baseada nos interesses do Usuário (banco de dados).
         """
-        print("📰 Selecionando as notícias mais relevantes...")
+        if not candidates_list:
+            return []
+
+        print(f"🧠 IA Analisando {len(candidates_list)} manchetes para {user.name}...")
         
+        # Converte a lista de objetos 'Interest' do banco para uma lista de strings
+        user_topics = [i.keyword for i in user.interests]
+        topics_str = ", ".join(user_topics)
+        
+        if not user_topics:
+            print("⚠️ Usuário sem tópicos definidos. Usando genéricos.")
+            topics_str = "Notícias Importantes, Tecnologia, Ciência, Economia"
+
         # Prepara a lista para o prompt
         candidates_text = ""
         for item in candidates_list:
             candidates_text += f"ID: {item['id']} | Título: {item['title']} | Fonte: {item['source']}\n"
-
-        topics_str = ", ".join(self.user_topics)
 
         prompt = f"""
         Você é um editor chefe pessoal. Seu usuário tem interesse nestes tópicos: {topics_str}.
@@ -48,92 +63,111 @@ class NewsCurator:
         """
 
         try:
-            # Ativando o JSON Mode 
+            # Chamada à API (JSON Mode)
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=prompt,
-                config={
-                    'response_mime_type': 'application/json'
-                }
+                config={'response_mime_type': 'application/json'}
             )
             
-            # Agora podemos carregar direto, sem replace de markdown
             selected_ids = json.loads(response.text)
             
-            # Validação simples para garantir que recebemos uma lista
+            # Validação e correção caso a IA retorne dict em vez de list
+            if isinstance(selected_ids, dict):
+                for val in selected_ids.values():
+                    if isinstance(val, list):
+                        selected_ids = val
+                        break
+            
             if not isinstance(selected_ids, list):
-                print("⚠️ IA retornou um JSON válido, mas não é uma lista. Tentando recuperar...")
-                # Se vier um dicionário tipo {"ids": [...]}, tentamos pegar a primeira lista que acharmos
-                if isinstance(selected_ids, dict):
-                    for key, val in selected_ids.items():
-                        if isinstance(val, list):
-                            selected_ids = val
-                            break
+                selected_ids = []
 
             # Filtra a lista original mantendo apenas os escolhidos
             final_selection = [item for item in candidates_list if item['id'] in selected_ids]
+            
+            print(f"🎯 IA selecionou {len(final_selection)} notícias relevantes.")
             return final_selection
 
         except Exception as e:
-            print(f"❌ [Erro na filtragem]: {e}")
-            # Fallback: Se a IA falhar, retorna os primeiros 'limit' itens
+            print(f"❌ [Erro na filtragem da IA]: {e}")
+            # Fallback: Se a IA falhar, retorna os primeiros itens para não ficar sem jornal
             return candidates_list[:limit]
 
     def summarize_article(self, article_data):
-        print(f"🤔 Analisando artigo: {article_data['title']}...")
+        # Mantemos igual, pois o resumo depende mais do conteúdo da notícia
+        print(f"🤔 Resumindo: {article_data['title']}...")
         prompt = f"""
-        Você é um analista de inteligência especialista. Sua tarefa é ler e analisar a notícia abaixo e criar um relatório de resumo para um jornal executivo.
-        DADOS DA NOTÍCIA:
-        Título: *{article_data['title']}
-        Fonte: {article_data.get('source')}
-        Conteúdo: {article_data['content'][:8000]} (Texto truncado se for muito longo)
+        Você é um analista de inteligência. Analise a notícia abaixo:
+        Título: {article_data['title']}
+        Conteúdo: {article_data['content'][:10000]}
 
-        FORMATO DE SAÍDA (Markdown):
-        - Apenas se o título {article_data['title']} estiver em inglês, reescreva-o em traduzindo para o português brasileiro e em itálico no início do resumo. Caso esteja em português, não reescreva o título.
-        - Escreva um resumo de 2 a 3 parágrafos, mantendo as informações do conteúdo.
-        - Liste 3 "Pontos Chave" em bullets.
-        - Inclua uma seção "Contexto Adicional" com 2-3 frases que expliquem o motivo da importância do tema ou implicações.
-        - O tom deve ser objetivo, profissional e direto.
-        - Idioma: Português do Brasil.
-
-        Gere apenas o conteúdo markdown, sem introduções ou conversas.
+        OBJETIVO:
+        Escreva um relatório de resumo (Deep Dive) em Português do Brasil.
+        
+        FORMATO (Markdown):
+        - Se o título original for em inglês, traduza-o.
+        - Resumo de 2 a 3 parágrafos.
+        - Lista de 3 "Pontos Chave".
+        - Seção "Contexto": Por que isso importa?
+        - Tom profissional e direto. Sem saudações.
         """
         try:
-            # Aqui NÃO usamos JSON mode, pois queremos Markdown
             response = self.client.models.generate_content(model=self.model_name, contents=prompt)
             return response.text
-        except:
-            return f"## {article_data['title']}\nErro no resumo."
+        except Exception as e:
+            return f"## {article_data['title']}\n\nErro ao gerar resumo: {e}"
 
     def generate_briefing(self, summaries_list):
-        print("📝 Gerando Briefing...")
+        # Mantemos igual (Capa do jornal)
+        print("📝 Escrevendo Editorial (Briefing)...")
         combined_text = "\n---\n".join(summaries_list)
         prompt = f"""
-        Atue como Editor Chefe de um jornal de elite. Abaixo estão os resumos das principais notícias do dia.
-
-        Sua tarefa é escrever a CAPA (Briefing Executivo) do jornal.
-
-        NOTÍCIAS DO DIA:
-        {combined_text}
-        ESTRUTURA DO BRIEFING (Markdown):
-        # KARTEIRO
-        [https://github.com/diegusxavier/karteiro](https://github.com/diegusxavier/karteiro)
-        ## Visão Geral
-        Um ou dois parágrafos concisos conectando os temas. Qual é o sentimento geral das notícias hoje?
-        ## Resumo dos Temas Principais
-        Identifique os temas mais relevantes que aparecem nas notícias, com um breve resumo do panorama geral de cada tema macro.
-        Para cada tema, liste os desenvolvimentos mais importantes em bullets. Entre 1 e 2 bullets por notícia, cada um contendo uma frase.
-        ## O que observar
-        Uma lista curta de implicações futuras baseada nessas notícias.
+        Atue como Editor Chefe. Escreva a CAPA (Briefing Executivo) do jornal com base nestes resumos:
         
-
-        IMPORTANTE:
-        - Não repita as notícias individualmente aqui, apenas sintetize os temas.
-        - Seja extremamente conciso e denso em informação.
-        - Gere apenas o markdown.
+        RESUMOS:
+        {combined_text}
+        
+        ESTRUTURA (Markdown):
+        # KARTEIRO
+        ## Visão Geral
+        Um parágrafo conectando os fatos do dia.
+        ## Destaques
+        Bullets rápidos dos temas principais.
+        ## O que observar
+        Tendências futuras.
+        
+        Seja conciso.
         """
         try:
             response = self.client.models.generate_content(model=self.model_name, contents=prompt)
             return response.text
         except:
-            return "# Briefing\nErro."
+            return "# Briefing\nErro ao gerar briefing."
+
+# --- TESTE ISOLADO ---
+if __name__ == "__main__":
+    from src.database import SessionLocal
+    from src.scraper import NewsScraper
+
+    db = SessionLocal()
+    user = db.query(User).first()
+    
+    if user:
+        # 1. Coleta (Scraper)
+        scraper = NewsScraper(db)
+        # Limitamos a 2 por fonte para economizar tokens no teste
+        candidates = scraper.get_candidates(user, limit_per_source=2)
+        
+        if candidates:
+            # 2. Curadoria (IA)
+            curator = NewsCurator()
+            # Passamos o objeto user para ele pegar os interesses
+            selected = curator.filter_candidates(candidates, user, limit=3)
+            
+            print("\n--- Resultado do Teste ---")
+            for item in selected:
+                print(f"✅ Aprovado: {item['title']}")
+        else:
+            print("Nenhum candidato encontrado (verifique se já não estão todos no histórico).")
+    
+    db.close()

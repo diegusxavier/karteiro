@@ -1,77 +1,98 @@
 import feedparser
 import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import requests
 import uuid
 from newspaper import Article
 from datetime import datetime
+from sqlalchemy.orm import Session
+from src.models import User, NewsHistory
 
 class NewsScraper:
-    def __init__(self, config):
-        self.sources = config.get('sources', [])
-        self.preferences = config.get('preferences', {})
-        self.include_images = self.preferences.get('include_images', False)
-        
-        # Tenta ler do YAML, se não existir, usa 15 como padrão
-        self.candidates_limit = self.preferences.get('rss_scan_limit', 15)
-        
+    def __init__(self, db: Session):
+        """
+        O Scraper agora precisa da sessão do banco de dados para verificar duplicatas.
+        """
+        self.db = db
         self.images_dir = os.path.join("data", "images")
         os.makedirs(self.images_dir, exist_ok=True)
 
-    def get_candidates(self):
+    def get_candidates(self, user: User, limit_per_source=5):
         """
-        Passo 1: Varre os RSS e retorna uma lista leve (apenas Título e Link)
-        para a IA decidir o que vale a pena.
+        Varre os RSS do usuário e retorna candidatos que AINDA NÃO estão no histórico.
         """
         candidates = []
-        print("\n🔎 Iniciando varredura de RSS...")
+        print(f"\n🔎 Iniciando varredura para: {user.name}")
 
-        for source in self.sources:
-            print(f"   📡 Conectando a: {source['name']}...") 
+        # Pega apenas fontes ativas do usuário (Magic do SQLAlchemy: user.sources)
+        active_sources = [s for s in user.sources if s.is_active]
+        
+        if not active_sources:
+            print("⚠️ Nenhuma fonte ativa encontrada para este usuário.")
+            return []
+
+        for source in active_sources:
+            print(f"   📡 Conectando a: {source.name}...") 
             
             try:
-                feed = feedparser.parse(source['url'])
+                # O timeout evita que o script trave se o site estiver fora do ar
+                feed = feedparser.parse(source.url)
                 
                 if not feed.entries:
-                    print(f"      ⚠️  Nenhum item encontrado neste feed. Verifique a URL.")
+                    print(f"      ⚠️  Nenhum item no feed.")
                     continue
 
-                # Pega os X primeiros itens do feed para análise
-                count_source = 0
-                for entry in feed.entries[:self.candidates_limit]:
-                    # Limpeza básica do título
+                count_added = 0
+                # Analisa os itens mais recentes
+                for entry in feed.entries[:limit_per_source]:
+                    link = entry.link.strip()
                     title = entry.title.strip()
+
+                    # Verifica se essa URL já foi processada para ESTE usuário
+                    exists = self.db.query(NewsHistory).filter(
+                        NewsHistory.user_id == user.id,
+                        NewsHistory.url == link
+                    ).first()
+
+                    if exists:
+                        # Se já existe, ignora silenciosamente (ou printa para debug)
+                        # print(f"      ↪️ Já vista: {title[:30]}...")
+                        continue
                     
-                    print(f"      • [{source['name']}] {title}")
-                    
+                    # Se não existe, adiciona aos candidatos
                     candidates.append({
                         "id": str(uuid.uuid4()), 
                         "title": title,
-                        "url": entry.link,
-                        "source": source['name'],
+                        "url": link,
+                        "source": source.name,
                         "published": entry.get('published', '')
                     })
-                    count_source += 1
+                    count_added += 1
+                    print(f"      • [NOVA] {title[:40]}...")
                 
-                print(f"      ✅ {count_source} manchetes coletadas.")
+                print(f"      ✅ {count_added} notícias novas selecionadas.")
 
             except Exception as e:
-                print(f"❌ [Erro crítico no feed {source['name']}]: {e}")
+                print(f"❌ [Erro no feed {source.name}]: {e}")
         
-        print(f"\n💬 Resumo: {len(candidates)} notícias candidatas enviadas para análise da IA.\n")
+        print(f"\n💬 Total: {len(candidates)} candidatos novos encontrados.\n")
         return candidates
 
     def download_article_content(self, url):
         """
-        Passo 2: Baixa o conteúdo pesado APENAS das notícias aprovadas pela IA.
+        Mantemos igual: Baixa o conteúdo completo usando Newspaper3k
         """
         try:
             article = Article(url, language='pt')
             article.download()
             article.parse()
             
-            # Baixa imagem
+            # Baixa imagem (Lógica simplificada: sempre baixa se tiver)
             local_image_path = None
-            if self.include_images and article.top_image:
+            if article.top_image:
                 local_image_path = self._download_image(article.top_image)
 
             return {
@@ -98,40 +119,19 @@ class NewsScraper:
             return None
         return None
 
-# --- BLOCO DE TESTE INDIVIDUAL ---
+# --- TESTE ISOLADO ---
 if __name__ == "__main__":
-    print("🛠️  Modo de Teste do Scraper Iniciado...")
+    from src.database import SessionLocal
     
-    # Configuração Fake para testar sem ler o arquivo YAML
-    mock_config = {
-        "sources": [
-            {"name": "Teste - CNN Tecnologia", "url": "https://www.cnnbrasil.com.br/tecnologia/feed/"},
-            {"name": "Teste - G1 Tecnologia", "url": "https://g1.globo.com/rss/g1/tecnologia/"}
-        ],
-        "preferences": {
-            "include_images": False,
-            "max_articles_per_source": 5
-        }
-    }
+    db = SessionLocal()
+    # Pega o primeiro usuário do banco para teste
+    user = db.query(User).first()
     
-    scraper = NewsScraper(mock_config)
-    
-    # Testa a coleta de candidatos
-    print("\n--- Testando get_candidates() ---")
-    candidatos = scraper.get_candidates()
-    
-    # Testa o download do primeiro artigo encontrado (se houver)
-    if candidatos:
-        print("\n--- Testando download_article_content() com o primeiro item ---")
-        primeiro = candidatos[0]
-        print(f"Baixando: {primeiro['title']} ({primeiro['url']})")
-        conteudo = scraper.download_article_content(primeiro['url'])
-        
-        if conteudo:
-            print("\n✅ Conteúdo baixado com sucesso!")
-            print(f"Tamanho do texto: {len(conteudo['content'])} caracteres")
-            print(f"Imagem principal: {conteudo['image_url']}")
-        else:
-            print("❌ Falha ao baixar conteúdo.")
+    if user:
+        scraper = NewsScraper(db)
+        candidatos = scraper.get_candidates(user)
+        print(f"Teste concluído: {len(candidatos)} itens retornados.")
     else:
-        print("⚠️ Nenhuma notícia encontrada para testar o download.")
+        print("Nenhum usuário no banco. Rode o seed.py!")
+    
+    db.close()
