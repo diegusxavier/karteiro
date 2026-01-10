@@ -17,7 +17,7 @@ class EpubGenerator:
             img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
         '''
 
-    def create_epub(self, briefing_text, articles_list, output_filename="daily_briefing.epub"):
+    def create_epub(self, briefing_text, articles_list, unselected_list=None, output_filename="daily_briefing.epub"):
         # 1. Configuração Básica do Livro
         book = epub.EpubBook()
         book.set_identifier(str(uuid.uuid4()))
@@ -90,6 +90,21 @@ class EpubGenerator:
             
             book.add_item(chapter)
             chapters.append(chapter)
+        # 3.5 Novo Capítulo: Outras Manchetes
+        if unselected_list:
+            unselected_html = "<h1>Outras Manchetes</h1><ul>"
+            for item in unselected_list:
+                source = item.get('source', '?')
+                title = item.get('title', 'Sem título')
+                url = item.get('url', '#')
+                unselected_html += f'<li><strong>[{source}]</strong> <a href="{url}">{title}</a></li>'
+            unselected_html += "</ul>"
+
+            c_unselected = epub.EpubHtml(title='Outras Manchetes', file_name='extra.xhtml', lang='pt-br')
+            c_unselected.content = unselected_html
+            c_unselected.add_item(nav_css)
+            book.add_item(c_unselected)
+            chapters.append(c_unselected)
 
         # 4. Define o Sumário (TOC) e Ordem de Leitura (Spine)
         book.toc = (

@@ -62,17 +62,26 @@ def main():
     print(f"\n🎨 Finalizando edição do jornal...")
     briefing = curator.generate_briefing(summaries)
     date_str = datetime.now().strftime('%Y-%m-%d')
-    
-    epub_path = epub_gen.create_epub(briefing, processed_articles, output_filename=f"Jornal_{date_str}.epub")
-    pdf_path = formatter.create_pdf(briefing, processed_articles, output_filename=f"Jornal_{date_str}.pdf")
-    
-    if epub_path:
-        target = os.getenv("KINDLE_EMAIL")
-        print(f"📤 Enviando para Kindle: {target}...")
-        sent = emailer.send_pdf(epub_path, target_email=target)
-        
-        if sent:
-            print(f"\n✨ SUCESSO! Edição concluída e enviada.")
+
+    # Identifica as notícias que NÃO foram selecionadas
+    selected_ids = {item['id'] for item in selected}
+    unselected = [item for item in candidates if item['id'] not in selected_ids]
+
+    # Passa 'unselected' como o parâmetro 'candidates_list' para o PDF
+    pdf_path = formatter.create_pdf(
+        briefing, 
+        processed_articles, 
+        candidates_list=unselected, 
+        output_filename=f"Jornal_{date_str}.pdf"
+    )
+
+    # Atualiza a chamada do EPUB (vamos alterar a classe abaixo)
+    epub_path = epub_gen.create_epub(
+        briefing, 
+        processed_articles, 
+        unselected_list=unselected, 
+        output_filename=f"Jornal_{date_str}.epub"
+    )
 
 if __name__ == "__main__":
     main()
