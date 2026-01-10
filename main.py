@@ -64,6 +64,7 @@ def main():
     date_str = datetime.now().strftime('%Y-%m-%d')
     
     epub_path = epub_gen.create_epub(briefing, processed_articles, output_filename=f"Jornal_{date_str}.epub")
+    pdf_path = formatter.create_pdf(briefing, processed_articles, output_filename=f"Jornal_{date_str}.pdf")
     
     if epub_path:
         target = os.getenv("KINDLE_EMAIL")
