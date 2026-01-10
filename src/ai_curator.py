@@ -107,30 +107,3 @@ class NewsCurator:
         except:
             return "# Briefing\nErro ao gerar briefing."
 
-# --- TESTE ISOLADO ---
-if __name__ == "__main__":
-    from src.database import SessionLocal
-    from src.scraper import NewsScraper
-
-    db = SessionLocal()
-    user = db.query(User).first()
-    
-    if user:
-        # 1. Coleta (Scraper)
-        scraper = NewsScraper(db)
-        # Limitamos a 2 por fonte para economizar tokens no teste
-        candidates = scraper.get_candidates(user, limit_per_source=2)
-        
-        if candidates:
-            # 2. Curadoria (IA)
-            curator = NewsCurator()
-            # Passamos o objeto user para ele pegar os interesses
-            selected = curator.filter_candidates(candidates, user, limit=3)
-            
-            print("\n--- Resultado do Teste ---")
-            for item in selected:
-                print(f"✅ Aprovado: {item['title']}")
-        else:
-            print("Nenhum candidato encontrado (verifique se já não estão todos no histórico).")
-    
-    db.close()

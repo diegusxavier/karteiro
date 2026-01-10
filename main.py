@@ -16,52 +16,62 @@ def load_config():
         return yaml.safe_load(f)
 
 def main():
-    print("🚀 Iniciando Karteiro (Versão Sem Banco)...")
     config = load_config()
-    
-    # Extrai configurações do YAML
     topics = config['preferences']['topics']
     sources = config['sources']
     
+    # Instancia as ferramentas
     scraper = NewsScraper()
     curator = NewsCurator()
     formatter = NewsFormatter()
     epub_gen = EpubGenerator()
     emailer = EmailSender()
 
-    # --- ETAPA A: Coleta ---
+    # --- ETAPA A: Coleta (O scraper agora imprime o próprio registro) ---
     candidates = scraper.get_candidates(sources, limit_per_source=5)
     
-    # --- ETAPA B: Curadoria ---
-    selected = curator.filter_candidates(candidates, topics, limit=7)
-    
+    if not candidates:
+        print("📭 Nenhuma notícia encontrada nos feeds.")
+        return
+
+    # --- ETAPA B: Curadoria via IA ---
+    print(f"🧠 IA analisando relevância para os tópicos: {', '.join(topics)}...")
+    selected = curator.filter_candidates(candidates, topics, limit=2)
+
+
+    if not selected:
+        return
+
     # --- ETAPA C: Processamento ---
     processed_articles = []
     summaries = []
+    
+    print(f"⏳ Gerando resumos analíticos...")
     for item in selected:
-        content = scraper.download_article_content(item['url'])
-        if content:
-            item.update(content)
+        print(f"   📝 Processando: {item['title'][:50]}...")
+        content_data = scraper.download_article_content(item['url'])
+        
+        if content_data:
+            item.update(content_data)
             summary = curator.summarize_article(item)
             item['ai_summary'] = summary
             processed_articles.append(item)
             summaries.append(summary)
 
-    if not processed_articles:
-        print("📭 Nenhuma notícia encontrada.")
-        return
-
     # --- ETAPA D: Geração e Envio ---
+    print(f"\n🎨 Finalizando edição do jornal...")
     briefing = curator.generate_briefing(summaries)
     date_str = datetime.now().strftime('%Y-%m-%d')
     
     epub_path = epub_gen.create_epub(briefing, processed_articles, output_filename=f"Jornal_{date_str}.epub")
     
     if epub_path:
-        # Nota: kindle_email deve estar no .env ou ser passado aqui
         target = os.getenv("KINDLE_EMAIL")
-        emailer.send_pdf(epub_path, target_email=target)
-        print("✅ Processo concluído!")
+        print(f"📤 Enviando para Kindle: {target}...")
+        sent = emailer.send_pdf(epub_path, target_email=target)
+        
+        if sent:
+            print(f"\n✨ SUCESSO! Edição concluída e enviada.")
 
 if __name__ == "__main__":
     main()
