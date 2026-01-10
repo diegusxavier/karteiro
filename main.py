@@ -9,12 +9,9 @@ from src.database import SessionLocal
 from src.models import User, NewsHistory
 from src.scraper import NewsScraper
 from src.ai_curator import NewsCurator
-<<<<<<< HEAD
 from src.pdf_generator import NewsFormatter
 from src.epub_generator import EpubGenerator # 1. Importando o gerador de EPUB
-=======
-from src.pdf_generator import NewsFormatterfix
->>>>>>> parent of 5eb26b8 (ajuste nos imports)
+
 from src.emailer import EmailSender 
 
 def main():
