@@ -83,5 +83,13 @@ def main():
         output_filename=f"Jornal_{date_str}.epub"
     )
 
+    if epub_path:
+        target = os.getenv("KINDLE_EMAIL")
+        print(f"📤 Enviando para Kindle: {target}...")
+        sent = emailer.send_pdf(epub_path, target_email=target)
+        
+        if sent:
+            print(f"\n✨ SUCESSO! Edição concluída e enviada.")
+
 if __name__ == "__main__":
     main()
