@@ -208,8 +208,8 @@ class NewsFormatter:
 
         try:
             doc.build(story)
-            print(f"📇 PDF (XL + Sumário Exclusivo) gerado com sucesso em: {output_path}")
+            print(f"PDF (XL + Sumário Exclusivo) gerado com sucesso em: {output_path}")
             return output_path
         except Exception as e:
-            print(f"❌ Erro ao gerar PDF: {e}")
+            print(f"Erro ao gerar PDF: {e}")
             return None

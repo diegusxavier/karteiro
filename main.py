@@ -31,11 +31,11 @@ def main():
     candidates = scraper.get_candidates(sources, limit_per_source=5)
     
     if not candidates:
-        print("📭 Nenhuma notícia encontrada nos feeds.")
+        print("Nenhuma notícia encontrada nos feeds.")
         return
 
     # --- ETAPA B: Curadoria via IA ---
-    print(f"🧠 IA analisando relevância para os tópicos: {', '.join(topics)}...")
+    print(f"IA analisando relevância para os tópicos: {', '.join(topics)}...")
     selected = curator.filter_candidates(candidates, topics, limit=2)
 
 
@@ -46,9 +46,9 @@ def main():
     processed_articles = []
     summaries = []
     
-    print(f"⏳ Gerando resumos analíticos...")
+    print(f"Gerando resumos analíticos...")
     for item in selected:
-        print(f"   📝 Processando: {item['title'][:50]}...")
+        print(f"   Processando: {item['title'][:50]}...")
         content_data = scraper.download_article_content(item['url'])
         
         if content_data:
@@ -59,7 +59,7 @@ def main():
             summaries.append(summary)
 
     # --- ETAPA D: Geração e Envio ---
-    print(f"\n🎨 Finalizando edição do jornal...")
+    print(f"\nFinalizando edição do jornal...")
     briefing = curator.generate_briefing(summaries)
     date_str = datetime.now().strftime('%Y-%m-%d')
 
@@ -85,11 +85,11 @@ def main():
 
     if epub_path:
         target = os.getenv("KINDLE_EMAIL")
-        print(f"📤 Enviando para Kindle: {target}...")
+        print(f"Enviando para Kindle: {target}...")
         sent = emailer.send_pdf(epub_path, target_email=target)
         
         if sent:
-            print(f"\n✨ SUCESSO! Edição concluída e enviada.")
+            print(f"\nSUCESSO! Edição concluída e enviada.")
 
 if __name__ == "__main__":
     main()

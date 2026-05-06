@@ -26,10 +26,10 @@ class EmailSender:
         recipient = target_email or self.default_kindle_email
         
         if not recipient:
-            print("❌ Erro: Nenhum e-mail de destino informado.")
+            print("Erro: Nenhum e-mail de destino informado.")
             return False
 
-        print(f"📧 Enviando de {self.sender_email} para {recipient}...")
+        print(f"Enviando de {self.sender_email} para {recipient}...")
 
         msg = MIMEMultipart()
         msg['From'] = self.sender_email
@@ -53,8 +53,8 @@ class EmailSender:
             server.login(self.sender_email, self.password)
             server.sendmail(self.sender_email, recipient, msg.as_string())
             server.quit()
-            print("📩 E-mail enviado com sucesso!")
+            print("E-mail enviado com sucesso!")
             return True
         except Exception as e:
-            print(f"❌ Falha no envio do e-mail: {e}")
+            print(f"Falha no envio do e-mail: {e}")
             return False

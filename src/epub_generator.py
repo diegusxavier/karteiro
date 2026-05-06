@@ -80,7 +80,7 @@ class EpubGenerator:
                 </div>
                 <hr class="divider"/>
                 <p style="text-align: center;">
-                    <a href="{url}">🔗 Ler notícia original completa</a>
+                    <a href="{url}">Ler notícia original completa</a>
                 </p>
             """
 
@@ -123,7 +123,7 @@ class EpubGenerator:
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
         epub.write_epub(output_path, book, {})
-        print(f"📘 EPUB gerado com sucesso em: {output_path}")
+        print(f"EPUB gerado com sucesso em: {output_path}")
         return output_path
 
     def _markdown_to_html(self, text):

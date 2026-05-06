@@ -53,12 +53,12 @@ class NewsCurator:
 
             return [item for item in candidates_list if item['id'] in selected_ids]
         except Exception as e:
-            print(f"❌ Erro na filtragem: {e}")
+            print(f"Erro na filtragem: {e}")
             return candidates_list[:limit]
 
     def summarize_article(self, article_data):
         # Mantemos igual, pois o resumo depende mais do conteúdo da notícia
-        print(f"🤔 Resumindo: {article_data['title']}...")
+        print(f"Resumindo: {article_data['title']}...")
         prompt = f"""
         Você é um analista de inteligência. Analise a notícia abaixo:
         Título: {article_data['title']}
@@ -82,7 +82,7 @@ class NewsCurator:
 
     def generate_briefing(self, summaries_list):
         # Mantemos igual (Capa do jornal)
-        print("📝 Escrevendo Editorial (Briefing)...")
+        print("Escrevendo Editorial (Briefing)...")
         combined_text = "\n---\n".join(summaries_list)
         prompt = f"""
         Atue como Editor Chefe. Escreva a CAPA (Briefing Executivo) do jornal com base nestes resumos:

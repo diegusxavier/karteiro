@@ -15,18 +15,18 @@ class NewsScraper:
         candidates = []
         
         print("\n" + "="*50)
-        print("📡 INICIANDO COLETA DE NOTÍCIAS")
+        print("INICIANDO COLETA DE NOTÍCIAS")
         print("="*50)
         
-        print(f"🔎 Fontes configuradas: {len(sources_list)}")
+        print(f"Fontes configuradas: {len(sources_list)}")
         
         for source in sources_list:
-            print(f"\n   📡 Conectando a: {source['name']}...")
+            print(f"\n   Conectando a: {source['name']}...")
             try:
                 feed = feedparser.parse(source['url'])
                 
                 if not feed.entries:
-                    print(f"      ⚠️  Nenhum item encontrado no feed.")
+                    print(f"      Nenhum item encontrado no feed.")
                     continue
 
                 count_added = 0
@@ -44,13 +44,13 @@ class NewsScraper:
                     count_added += 1
                     print(f"      • [ENCONTRADA] {title[:60]}...")
                 
-                print(f"      ✅ {count_added} notícias capturadas.")
+                print(f"      {count_added} notícias capturadas.")
 
             except Exception as e:
                 print(f"❌ [Erro no feed {source.get('name')}]: {e}")
         
         print("\n" + "="*50)
-        print(f"📊 FIM DA COLETA: {len(candidates)} candidatos no total.")
+        print(f"FIM DA COLETA: {len(candidates)} candidatos no total.")
         print("="*50 + "\n")
         
         return candidates
@@ -66,5 +66,5 @@ class NewsScraper:
                 "image_url": article.top_image
             }
         except Exception as e:
-            print(f"❌ [Erro ao baixar conteúdo]: {e}")
+            print(f"[Erro ao baixar conteúdo]: {e}")
             return None
